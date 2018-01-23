@@ -3,7 +3,7 @@ classdef RoboNouMiChiClass < RoboNouMiChiClassOc
     %   Detailed explanation goes here
     
     properties
-
+        codepath;
     end
     
     methods
@@ -22,20 +22,17 @@ classdef RoboNouMiChiClass < RoboNouMiChiClassOc
             
         end
         
-        function genCode(obj,type)
+        function genCode(obj,type,func,target,precision, genCodeOnlyValue, args)
             cfg = coder.gpuConfig(type);
             cfg.GenerateReport = true;
+            cfg.GenCodeOnly=genCodeOnlyValue;
             cfg.TargetLang = 'C++';
-            codegen  -d sumpurn/codegen/lib/detect_lane -args {ones(227,227,3,'single'),ones(1,6,'double'),ones(1,6,'double')} -config cfg detect_lane
-
-        end
-        
-        function genCodeEmbed(obj,type)
-            cfg = coder.config(type);
-            cfg.GenerateReport = true;
-            cfg.TargetLang = 'C++';
-            codegen  -d sumpurn/codegen/embed/lib/detect_lane -args {ones(227,227,3,'single'),ones(1,6,'double'),ones(1,6,'double')} -config cfg detect_lane
-
+            cfg.Toolchain = ['NVIDIA CUDA  (w/Microsoft Visual C++ 2015) | gmake (64-bit Windows)'];
+            codepath = "sumpurn/codegen/"+target+"/"+type+"/"+precision+"/"+func;
+            command = "codegen  -d " + codepath + " " + " -args " + args + " -config cfg " + func; 
+            disp(command);
+            obj.codepath = codepath; 
+            eval(command);
         end
         
         function buildExamples(obj,examples)
